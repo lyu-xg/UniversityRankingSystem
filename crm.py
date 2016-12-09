@@ -51,6 +51,8 @@ def test():
         predict_hit = np.dot(feature_vector, WEIGHT_VECTOR)
         diff = real_hit - predict_hit
         total_diff += diff
+    print "Current Error in sum:"
+    print total_diff
 
 
 def valid():
