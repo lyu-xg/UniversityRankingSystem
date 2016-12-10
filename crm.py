@@ -9,7 +9,7 @@ RElATION_SIZE = 5
 FEATURE_SIZE = 5
 WEIGHT_SIZE = FEATURE_SIZE
 
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 LAMBDA = 0.001
 CONFS = {} # Dictionary for relative vectors, key is the name of conference
              # RElATION_SIZE size is 5 for each.
@@ -18,7 +18,7 @@ SCHOOLS = {} # Dictionary for relative vectors, key is the name of schools name.
 TRAIN = []
 # VALID = []
 TEST = []
-WEIGHT_VECTOR = np.random.randn(WEIGHT_SIZE) * 0.5
+WEIGHT_VECTORS = {}
 
 
 
@@ -44,11 +44,14 @@ def pre_data():
     for conf in conf_list:
         c = np.random.randn(RElATION_SIZE) * 0.5
         CONFS[conf] = c
+    for school in school_list:
+        for conf in conf_list:
+            WEIGHT_VECTORS[(school,conf)] = np.random.randn(WEIGHT_SIZE) * 0.5
     return
 
 def train():
     # [[school_name,conference_name],[f1,f2,f3,f4],X]
-    global WEIGHT_VECTOR
+    global WEIGHT_VECTORS
     global CONFS
     global SCHOOLS
 
@@ -57,22 +60,23 @@ def train():
         real_hit = data[2]* 1.0
         school_vector = SCHOOLS[data[0][0]]
         conf_vector = CONFS[data[0][1]]
+        weight = WEIGHT_VECTORS[tuple(data[0])]
         f0 = np.dot (school_vector,conf_vector)
         feature_vector = np.array([f0])
         feature_vector = np.concatenate((feature_vector,data[1]),axis = 0)
-        predict_hit = np.dot(feature_vector,WEIGHT_VECTOR)
+        predict_hit = np.dot(feature_vector,weight)
         diff = real_hit - predict_hit
         total_diff += diff
 
         #calculate delta for w c_j s_i
-        ds = 2 * diff * WEIGHT_VECTOR[0] * conf_vector
-        dc = 2 * diff * WEIGHT_VECTOR[0] * school_vector
+        ds = 2 * diff * weight[0] * conf_vector
+        dc = 2 * diff * weight[0] * school_vector
         dw = 2 * diff * feature_vector
 
         #update
         SCHOOLS[data[0][0]] += LEARNING_RATE*(ds + LAMBDA*school_vector)
         CONFS[data[0][1]] += LEARNING_RATE*(dc + LAMBDA*conf_vector)
-        WEIGHT_VECTOR += LEARNING_RATE*(dw + LAMBDA*WEIGHT_VECTOR)
+        WEIGHT_VECTORS[tuple(data[0])] += LEARNING_RATE*(dw + LAMBDA*weight)
 
     return total_diff
 
@@ -80,7 +84,7 @@ def train():
 def test():
     # [[school_name,conference_name],[f1,f2,f3,f4],X]
 
-    global WEIGHT_VECTOR
+    global WEIGHT_VECTORS
     global CONFS
     global SCHOOLS
 
@@ -90,14 +94,14 @@ def test():
         real_hit = data[2] * 1.0
         school_vector = SCHOOLS[data[0][0]]
         conf_vector = CONFS[data[0][1]]
+        weight = WEIGHT_VECTORS[tuple(data[0])]
         f0 = np.dot(school_vector, conf_vector)
         feature_vector = np.array([f0])
         feature_vector = np.concatenate((feature_vector, data[1]), axis=0)
-        predict_hit = np.dot(feature_vector, WEIGHT_VECTOR)
+        predict_hit = np.dot(feature_vector, weight)
         diff = real_hit - predict_hit
         total_diff += diff
-    print "Current Error in sum:"
-    print total_diff
+    print "total error on test:%f" % total_diff
 
 
 # def valid():
@@ -126,16 +130,14 @@ def learn():
 
     # f_handler = open('h40.txt', 'a')
     # sys.stdout = f_handler
-    sumloss = 0
+
     for iter in range(300):
         print "Iter %d" % iter
         print "Training..."
         loss = train()
-        sumloss += loss
+        print "total error on train:%f"%loss
 
-        print sumloss
-        print "begin predict"
-
+        print "Testing"
         test()
         #f_handler.close()
 
