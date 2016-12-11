@@ -26,19 +26,25 @@ SelectedAffiliationsPath = expanduser("~") + "/data/2016KDDCupSelectedAffiliatio
 SelectedPapersPath = expanduser("~") + "/data/2016KDDCupSelectedPapers.txt"
 AuthorsPath = expanduser("~") +  "/data/Authors.txt"
 PaperAuthorAffiliationsPath = expanduser("~") +  "/data/PaperAuthorAffiliations.txt"
-
+PaperReferencesPath = expanduser("~") + "/data/PaperReferences.txt"
+ShangHaiRankingPath = expanduser("~") + "/Desktop/shanghaiData.csv"
+FieldOfStudyHierarchyPath = expanduser("~") + "/data/Papers.txt"
 #dataPath = expanduser("~") + "/data/Papers.txt"
 
 connection = sqlite3.connect(sqlite_file)
 cursor = connection.cursor()
 
 
-with open(PaperAuthorAffiliationsPath) as file:
-    for line in file:
+with open(FieldOfStudyHierarchyPath) as file:
+    for index,line in enumerate(file):
         fields = line.strip("\n").strip("\r").replace("'","''").split("\t")
         #print(fields)
-        sql = "INSERT INTO PaperAuthorAffiliations (PaperID,AuthorID,AffiliationID,OriginalAffiliationName,NormalizedAffiliationName,AuthorSequenceNumber) VALUES ('{}','{}','{}','{}','{}','{}')".format(fields[0],fields[1],fields[2],fields[3],fields[4],fields[5])
+        assert(len(fields)==11)
+        if index%100000==0:
+            print("processing: no. "+str(index))
+        sql = "INSERT INTO Papers (PaperID,Year,DOI,ConferenceID,PaperRank) VALUES ('{}','{}','{}','{}','{}')".format(fields[0],fields[3],fields[5],fields[9],fields[10])
         #sql = "UPDATE SelectedAffiliations SET AffiliationName = '{}' WHERE AffiliationID = '{}'".format(fields[1],fields[0])
+        #print(sql)
         cursor.execute(sql)
 
 connection.commit()
