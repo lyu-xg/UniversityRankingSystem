@@ -1,6 +1,9 @@
 import sqlite3
 from os.path import expanduser
-from select import affiliationIDs
+from kdddata import affiliationIDs
+PossibleConferencesList = ['KDD', 'ICDM', 'CIKM', 'WWW', 'AAAI', 'ICDE', 'ICML', 'NIPS', 'AAAI', 'CVPR', 'KDD', 'ICASSP', 'SIGIR', 'CIKM', 'WWW', 'ECIR', 'WSDM', 'KDD', 'SIGMOD', 'ICDE', 'VLDB', 'CIKM', 'KDD', 'EDBT', 'SIGCOMM', 'INFOCOM', 'ICC', 'GLOBECOM', 'NSDI', 'IMC', 'MOBICOM', 'INFOCOM', 'ICC', 'GLOBECOM', 'SIGCOMM', 'MobiSys', 'FSE', 'ICSE', 'ASE', 'ISSTA', 'ICSM', 'MSR', 'MM', 'ICME', 'ICIP', 'CVPR', 'ICASSP', 'ICCV']
+
+import numpy as np
 
 sqlite_file = expanduser("~") + "/data/db.sqlite"
 connection = sqlite3.connect(sqlite_file)
@@ -47,21 +50,23 @@ def getNumOfThisPaper(paperID):
 	return cursor.fetchone()[0]
 
 for school in affiliationIDs:
-	for year in ['2011','2012','2013','2014']:
-		workset = filter((lambda entry: entry[1]==year and entry[3]==school and entry[5]=="KDD"),table)
+	workset = filter((lambda entry: entry[3]==school),table)
+	for year in ['2011','2012','2013','2014','2015']:
+		workset = filter((lambda entry: entry[1]==year),workset)
 		# all entry that is of this school and this year on KDD
-		
-		dataSet[(school,'KDD',year)] =  [
-			paperNumber(workset),
-			authorNumber(workset),
-			authorPaperPair(workset),
-			firstAuthor(workset),
-			secondAuthor(workset),
-			score(workset)]
-
+		for conference in PossibleConferencesList:
+			workset = filter((lambda entry: entry[5]==conference),workset)
+			dataSet[(school,conference,year)] =  [
+				paperNumber(workset),
+				authorNumber(workset),
+				authorPaperPair(workset),
+				firstAuthor(workset),
+				secondAuthor(workset),
+				score(workset)]
 
 
 print(dataSet)
+np.save('data.npy',dataSet)
 
 connection.commit()
 connection.close()
