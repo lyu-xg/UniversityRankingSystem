@@ -6,17 +6,17 @@ from math import *
 LENGTH_TRAIN = 0
 LENGTH_TEST = 0
 
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 LAMBDA = 0.1
 TRAIN = []
 TEST = []
-WEIGHT_VECTOR = np.random.rand(5)
+WEIGHT_VECTOR = np.random.randn(5)
 
-data_set = {("CMU","KDD"): [[1,1,1,1,1,1], [1,1,1,1,1,2], [1,1,1,1,1,3],[1,1,1,1,1,4], [1,1,1,1,1,5]]}
-data_set[("NEU","KDD")] = [[1,1,1,1,1,-1], [1,1,1,1,1,-2], [1,1,1,1,1,3],[1,1,1,1,1,-4], [1,1,1,1,1,6]]
-data_set[("NEU1","KDD")] = [[1,4,2,1,1,-1], [1,1,1,8,1,-2], [1,7,1,7,1,3],[1,1,6,1,1,1], [1,1,1,1,1,7]]
-data_set[("NEU2","KDD")] = [[1,6,3,1,1,-1], [1,7,3,1,1,-2], [1,1,1,1,8,3],[1,1,1,18,1,2], [1,1,1,1,1,8]]
-data_set[("NEU3","KDD")] = [[1,7,1,1,1,-1], [1,1,4,1,1,-2], [1,1,1,1,1,3],[1,1,1,1,1,3], [1,1,1,1,1,9]]
+# data_set = {("CMU","KDD"): [[1,1,1,1,1,1], [1,1,1,1,1,2], [1,1,1,1,1,3],[1,1,1,1,1,4], [1,1,1,1,1,5]]}
+# data_set[("NEU","KDD")] = [[1,1,1,1,1,-1], [1,1,1,1,1,-2], [1,1,1,1,1,3],[1,1,1,1,1,-4], [1,1,1,1,1,6]]
+# data_set[("NEU1","KDD")] = [[1,4,2,1,1,-1], [1,1,1,8,1,-2], [1,7,1,7,1,3],[1,1,6,1,1,1], [1,1,1,1,1,7]]
+# data_set[("NEU2","KDD")] = [[1,6,3,1,1,-1], [1,7,3,1,1,-2], [1,1,1,1,8,3],[1,1,1,18,1,2], [1,1,1,1,1,8]]
+# data_set[("NEU3","KDD")] = [[1,7,1,1,1,-1], [1,1,4,1,1,-2], [1,1,1,1,1,3],[1,1,1,1,1,3], [1,1,1,1,1,9]]
 
 TRUE_RANK_2014 = {}
 TRUE_RANK_2015 = {}
@@ -53,7 +53,7 @@ def pre_data():
             test_feature = list_add(feature[1], feature[2], feature[3])
 
             train_data = [key,train_feature[:5],feature[3][5]]
-            test_data = [key, test_feature[:5], feature[4][5]]
+            test_data = [key,test_feature[:5],feature[4][5]]
 
             TRAIN.append(train_data)
             TEST.append(test_data)
@@ -104,15 +104,16 @@ def train():
         predict_score = np.dot(feature_vector,WEIGHT_VECTOR)
         whole_rank_2014[data[0][0]] = predict_score
         diff = predict_score - real_score
-        total_diff += diff*diff
+        
 
         # calculate delta for w c_j s_i
         dw = diff * feature_vector
-
+        total_diff += diff*diff
         # update
         WEIGHT_VECTOR += -LEARNING_RATE*(dw + LAMBDA*WEIGHT_VECTOR)
-    rank_result = sorted(whole_rank_2014, key=whole_rank_2014.__getitem__)
-    evalutate(rank_result, IDCG_2014,TRUE_RANK_2014)
+    # rank_result = sorted(whole_rank_2014, key=whole_rank_2014.__getitem__)
+    # evalutate(rank_result, IDCG_2014,TRUE_RANK_2014)
+    # print WEIGHT_VECTOR
     return total_diff/LENGTH_TRAIN
 
 
@@ -129,8 +130,8 @@ def test():
         total_diff += abs(diff)
     print "total error on test:%f" % (total_diff/LENGTH_TEST)
 
-    rank_result = sorted(whole_rank_2015,key=whole_rank_2015.__getitem__)
-    evalutate(rank_result,IDCG_2015,TRUE_RANK_2015)
+    # rank_result = sorted(whole_rank_2015,key=whole_rank_2015.__getitem__)
+    # evalutate(rank_result,IDCG_2015,TRUE_RANK_2015)
 
 
 def evalutate(rank,i,dic):
@@ -143,12 +144,12 @@ def evalutate(rank,i,dic):
     print NDCG
     return
 
-    return
 
 
 def learn():
 
     for iteration in range(100):
+        print "*****************************************************************"
         print "Iter %d" % iteration
         print "Training..."
         loss = train()
@@ -169,8 +170,7 @@ def basic_info():
 def main():
     pre_data()
     basic_info()
-    print TRUE_RANK_2014
-    print TRUE_RANK_2015
+    
     learn()
 
 

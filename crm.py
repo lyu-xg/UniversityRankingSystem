@@ -27,7 +27,7 @@ def pre_data():
     for i in range(1000):
         school = school_list[random.randint(0, len(school_list)-1)]
         conf = conf_list[random.randint(0, len(conf_list)-1)]
-        features = np.random.rand(4)
+        features = np.random.randn(4)
         X = np.random.random_integers(10)
         data = [[school,conf],features,X]
         TRAIN.append(data)
@@ -50,15 +50,15 @@ def train():
         feature_vector = np.array([f0])
         feature_vector = np.concatenate((feature_vector,data[1]),axis = 0)
         predict_hit = np.dot(feature_vector,weight)
-        diff = real_hit - predict_hit
+        diff = predict_hit - real_hit
         total_diff += abs(diff)
 
         # calculate delta for w c_j s_i
         dw = 2 * diff * feature_vector
 
         # update
-        WEIGHT_VECTORS[tuple(data[0])] += LEARNING_RATE*(dw + LAMBDA*weight)
-
+        WEIGHT_VECTORS[tuple(data[0])] -= LEARNING_RATE*(dw + LAMBDA*weight)
+        # print WEIGHT_VECTORS
     return total_diff/800
 
 
@@ -110,7 +110,7 @@ def valid(error):
 def learn():
 
 
-    for iter in range(300):
+    for iter in range(100):
         print "Iter %d" % iter
         print "Training..."
         loss = train()
