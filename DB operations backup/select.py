@@ -8,12 +8,15 @@ if __name__ == "__main__":
 
 
 
-	FeatureSpace = {}
-	'''
-	cursor.execute('select distinct NormalizedAffiliationName')
-	for entry in cursor.fetchall():
-		fields = [str(i) for i in entry]
+	result = {}
+	
+	
+	for entry in cursor.execute('select * from SelectedAffiliations'):
+		fields = [str(i.encode('utf-8')) if isinstance(i, unicode) else i for i in entry]
+		result[fields[1]]=fields[2]
+	print(result)
 
+	'''
 	with open('temp','w') as outfile:
 
 		insertCount = 0
