@@ -27,18 +27,18 @@ def secondAuthor(workset):
 	secondAuthors = [entry[4] for entry in workset if entry[4] > 1]
 	return len(secondAuthors)
 
-def score(workset):
+def score(workset,cursor):
 	s = 0
 	for entry in workset:
-		s += 1.0/getNumOfThisPaper(entry[0])
+		s += 1.0/getNumOfThisPaper(entry[0],cursor)
 	#if s>0:
 		#print(s)
 	return s
 
-def getNumOfThisPaper(paperID):
-	#cursor.execute("select COUNT(*) from Final where PaperID ='{}'".format(paperID))
-	#return cursor.fetchone()[0]
-	return len(filter((lambda entry: entry[0]==paperID),table))
+def getNumOfThisPaper(paperID,cursor):
+	cursor.execute("select COUNT(*) from Final where PaperID ='{}'".format(paperID))
+	return cursor.fetchone()[0]
+	#return len(filter((lambda entry: entry[0]==paperID),table))
 
 sqlite_file = expanduser("~") + "/data/db.sqlite"
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
 					authorPaperPair(workset),
 					firstAuthor(workset),
 					secondAuthor(workset),
-					score(workset)]
+					score(workset,cursor)]
 
 
 	print(dataSet)

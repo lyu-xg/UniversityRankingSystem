@@ -1,4 +1,4 @@
-
+# only used to create tables
 import sqlite3
 from os.path import expanduser
 
