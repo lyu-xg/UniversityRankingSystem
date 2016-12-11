@@ -31,21 +31,22 @@ ShangHaiRankingPath = expanduser("~") + "/Desktop/shanghaiData.csv"
 FieldOfStudyHierarchyPath = expanduser("~") + "/data/Papers.txt"
 #dataPath = expanduser("~") + "/data/Papers.txt"
 
-connection = sqlite3.connect(sqlite_file)
-cursor = connection.cursor()
+if __name__ == "__main__":
+    connection = sqlite3.connect(sqlite_file)
+    cursor = connection.cursor()
 
 
-with open(FieldOfStudyHierarchyPath) as file:
-    for index,line in enumerate(file):
-        fields = line.strip("\n").strip("\r").replace("'","''").split("\t")
-        #print(fields)
-        assert(len(fields)==11)
-        if index%100000==0:
-            print("processing: no. "+str(index))
-        sql = "INSERT INTO Papers (PaperID,Year,DOI,ConferenceID,PaperRank) VALUES ('{}','{}','{}','{}','{}')".format(fields[0],fields[3],fields[5],fields[9],fields[10])
-        #sql = "UPDATE SelectedAffiliations SET AffiliationName = '{}' WHERE AffiliationID = '{}'".format(fields[1],fields[0])
-        #print(sql)
-        cursor.execute(sql)
+    with open(FieldOfStudyHierarchyPath) as file:
+        for index,line in enumerate(file):
+            fields = line.strip("\n").strip("\r").replace("'","''").split("\t")
+            #print(fields)
+            assert(len(fields)==11)
+            if index%100000==0:
+                print("processing: no. "+str(index))
+            sql = "INSERT INTO Papers (PaperID,Year,DOI,ConferenceID,PaperRank) VALUES ('{}','{}','{}','{}','{}')".format(fields[0],fields[3],fields[5],fields[9],fields[10])
+            #sql = "UPDATE SelectedAffiliations SET AffiliationName = '{}' WHERE AffiliationID = '{}'".format(fields[1],fields[0])
+            #print(sql)
+            cursor.execute(sql)
 
-connection.commit()
-connection.close()
+    connection.commit()
+    connection.close()
