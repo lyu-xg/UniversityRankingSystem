@@ -9,14 +9,14 @@ cursor = connection.cursor()
 dataSet = {}
 
 table = []
-for entry in cursor.execute('select PaperID,Year,AuthorID,AffiliationID,AuthorSequence from KDDFinal'):
+for entry in cursor.execute("select PaperID,Year,AuthorID,AffiliationID,AuthorSequence,ConferenceShortName from Final"):
     table.append([str(i.encode('utf-8')) if isinstance(i, unicode) else i for i in entry])
 print('get table')
 print(len(table))
 def paperNumber(workset):
 	# number of distinct papers
 	papers = [entry[0] for entry in workset]
-	print(len(set(papers)))
+	#print(len(set(papers)))
 	return len(set(papers))
 
 def authorNumber(workset):
@@ -39,7 +39,7 @@ def secondAuthor(workset):
 def score(workset):
 	s = 0
 	for entry in workset:
-		s += 1/getNumOfThisPaper(entry[0])
+		s += 1.0/getNumOfThisPaper(entry[0])
 	return s
 
 def getNumOfThisPaper(paperID):
@@ -48,8 +48,9 @@ def getNumOfThisPaper(paperID):
 
 for school in affiliationIDs:
 	for year in ['2011','2012','2013','2014']:
-		workset = filter((lambda entry: entry[1]==year and entry[3]==school),table)
+		workset = filter((lambda entry: entry[1]==year and entry[3]==school and entry[5]=="KDD"),table)
 		# all entry that is of this school and this year on KDD
+		
 		dataSet[(school,'KDD',year)] =  [
 			paperNumber(workset),
 			authorNumber(workset),
