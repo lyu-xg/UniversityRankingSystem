@@ -3,7 +3,7 @@
 import numpy as np
 from math import *
 from alldata import dataset
-from schoolname import affiliationName
+
 
 affiliationIDs =set(['0003B055',
  '0005FC5A',
@@ -752,7 +752,7 @@ LENGTH_TRAIN = 0
 LENGTH_TEST = 0
 
 LEARNING_RATE = 0.00001
-LAMBDA = 0.1
+LAMBDA = 0.01
 TRAIN = []
 TEST = []
 # WEIGHT_VECTOR = np.random.randn(6)
@@ -838,12 +838,13 @@ def list_add(l1,l2,l3):
 def train():
     # [[school_name,conference_name],[f1,f2,f3,f4],X]
     global WEIGHT_VECTORS
-
+    total_score = 0.0
     whole_rank_2014 = {}
     total_diff = 0.0
     for data in TRAIN:
         weight = WEIGHT_VECTORS[(data[0],'KDD')]
         real_score = data[2] * 1.0
+        total_score += real_score
         feature_vector = np.array(data[1])
         predict_score = np.dot(feature_vector,weight)
         whole_rank_2014[data[0]] = predict_score
@@ -856,32 +857,35 @@ def train():
         WEIGHT_VECTORS[(data[0], 'KDD')] += -LEARNING_RATE*(dw + LAMBDA*weight)
 
     rank_result = sorted(whole_rank_2014, key=whole_rank_2014.__getitem__)[::-1]
-    print rank_result
     evalutate(rank_result, IDCG_2014,TRUE_RANK_2014)
     # print WEIGHT_VECTOR
-    return total_diff/LENGTH_TRAIN
+    # 
+    print "total error on train:%f" % total_diff
+    print "total_score is %f"%total_score
+    return rank_result
 
 
 def test():
 
     global WEIGHT_VECTORS
-
+    total_score = 0.0
     # [[school_name,conference_name],[f1,f2,f3,f4],X]
     whole_rank_2015 = {}
     total_diff = 0.0
     for data in TEST:
         weight = WEIGHT_VECTORS[(data[0],'KDD')]
         real_score = data[2] * 1.0
+        total_score+=real_score
         feature_vector = np.array(data[1])
         predict_score = np.dot(feature_vector, weight)
         whole_rank_2015[data[0]] = predict_score
         diff = predict_score - real_score
         total_diff += abs(diff)
-    print "total error on test:%f" % (total_diff/LENGTH_TEST)
-
+    print "total error on test:%f" % total_diff
+    print "total_score is %f" %total_score
     rank_result = sorted(whole_rank_2015,key=whole_rank_2015.__getitem__)[::-1]
-    print rank_result
     evalutate(rank_result,IDCG_2015,TRUE_RANK_2015)
+    return rank_result
 
 
 def evalutate(rank,i,dic):
@@ -900,16 +904,17 @@ def evalutate(rank,i,dic):
 
 def learn():
 
-    for iteration in range(30):
+    for iteration in range(2):
         print "*****************************************************************"
         print "Iter %d" % iteration
         print "Testing"
-        test()
+        rank_test = test()
         print "Training..."
-        loss = train()
-        print "total error on train:%f" % loss
+        rank_train = train()
+        
 
-
+    print rank_test[:100]
+    print rank_train[:100]
 
     return
 
@@ -932,7 +937,6 @@ def main():
     learn()
     print TRUE_RANK_2014
     print TRUE_RANK_2015
-    print WEIGHT_VECTORS
 
 if __name__ == '__main__':
     main()
