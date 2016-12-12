@@ -1,6 +1,6 @@
 import sqlite3
 from os.path import expanduser
-from kdddata import affiliationIDs
+from schoolname import affiliationName
 PossibleConferencesList = ['KDD', 'ICDM', 'CIKM', 'WWW', 'AAAI', 'ICDE', 'ICML', 'NIPS', 'AAAI', 'CVPR', 'KDD', 'ICASSP', 'SIGIR', 'CIKM', 'WWW', 'ECIR', 'WSDM', 'KDD', 'SIGMOD', 'ICDE', 'VLDB', 'CIKM', 'KDD', 'EDBT', 'SIGCOMM', 'INFOCOM', 'ICC', 'GLOBECOM', 'NSDI', 'IMC', 'MOBICOM', 'INFOCOM', 'ICC', 'GLOBECOM', 'SIGCOMM', 'MobiSys', 'FSE', 'ICSE', 'ASE', 'ISSTA', 'ICSM', 'MSR', 'MM', 'ICME', 'ICIP', 'CVPR', 'ICASSP', 'ICCV']
 
 import numpy as np
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 	print('get table')
 	print(len(table))
 
-	for school in affiliationIDs:
+	for school in affiliationName.keys():
 		schoolworkset = filter((lambda entry: entry[3]==school),table)
 		for year in ['2011','2012','2013','2014','2015']:
 			yearworkset = filter((lambda entry: entry[1]==year),schoolworkset)
