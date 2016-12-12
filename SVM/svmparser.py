@@ -15,12 +15,12 @@ PossibleConferences = [
 
 topConferences = [entry[0] for entry in PossibleConferences]
 
-schools = affiliationName.keys()
+schools = [key for key in affiliationName]
 previousYears = ['2011','2012','2013','2014']
-trainPath = expanduser('~')+'/Desktop/svm_light/train'
-modelPath = expanduser('~')+'/Desktop/svm_light/model'
-testPath = expanduser('~') + '/Desktop/svm_light/test'
-predictionPath = expanduser('~')+'/Desktop/svm_light/prediction'
+trainPath = 'svm_rank/train'
+modelPath = 'svm_rank/model'
+testPath = 'svm_rank/test'
+predictionPath = 'svm_rank/prediction'
 
 def generateData(writePath, yearRange, conference,qid):
 	with open(writePath,'w') as outfile:
@@ -82,10 +82,11 @@ def runModelandPredict():
 	runPrediction()
 
 def runModel():
-	system("~/Desktop/svm_light/./svm_learn -z p {} {}".format(trainPath,modelPath))
+	normalizeFactor = 10.0
+	system("svm_rank/./svm_rank_learn -c {} {} {}".format(normalizeFactor,trainPath,modelPath))
 
 def runPrediction():
-	system("~/Desktop/svm_light/./svm_classify {} {} {}".format(testPath,modelPath,predictionPath))
+	system("svm_rank/./svm_rank_classify {} {} {}".format(testPath,modelPath,predictionPath))
 
 if __name__ == "__main__":
 	#generateTrainAndTestData('KDD')
@@ -93,5 +94,5 @@ if __name__ == "__main__":
 	P = predictAllConference()
 	print(P)
 	for conference in P:
-		print("***************"+conference+"*****************")
+		print("\n\n***************"+conference+"*****************")
 		printPredictionNicely(sortedItems(P[conference]))

@@ -1,3 +1,10 @@
 *.xml
 *.pyc
 *.iml
+SVM/svm_rank/test
+
+SVM/svm_rank/train
+
+SVM/svm_rank/model
+
+SVM/svm_rank/prediction
