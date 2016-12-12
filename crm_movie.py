@@ -6,12 +6,12 @@ from math import *
 LENGTH_TRAIN = 0
 LENGTH_TEST = 0
 
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.01
 LAMBDA = 0.1
 TRAIN = []
 TEST = []
-WEIGHT_VECTOR = np.random.randn(5)
-
+WEIGHT_VECTOR = np.zeros(5)
+PAST_LOSS = 1.0
 def sigmoid(x):
     return 1.0/(1.0+np.exp(-x))
 
@@ -28,7 +28,7 @@ def pre_data():
     for i in range(1000):
         data = np.random.randint(10, size=5)
         label =  np.dot(para,data)
-        label = sigmoid(label)
+        # label = sigmoid(label)
         data = [data,label]
         if i >=800:
             TEST.append(data)
@@ -54,15 +54,15 @@ def train():
         feature_vector = data[0]
         predict_score = np.dot(feature_vector,WEIGHT_VECTOR)
         diff = predict_score - real_score
-        
+
         # calculate delta for w c_j s_i
         dw = diff * feature_vector
         total_diff += abs (diff)
 
         # update
-        WEIGHT_VECTOR += -LEARNING_RATE*(dw + LAMBDA*WEIGHT_VECTOR)
-    print WEIGHT_VECTOR
-    return total_diff/LENGTH_TRAIN
+        WEIGHT_VECTOR -= LEARNING_RATE*(dw + LAMBDA*WEIGHT_VECTOR)
+    print "total error on train:%f"% total_diff
+    return
 
 
 def test():
@@ -75,21 +75,27 @@ def test():
         predict_score = np.dot(feature_vector,WEIGHT_VECTOR)
         diff = predict_score - real_score
         total_diff += abs(diff)
-    print "total error on test:%f" % (total_diff/LENGTH_TEST)
-
+    print "total error on test:%f" % total_diff
+    return total_diff
     # rank_result = sorted(whole_rank_2015,key=whole_rank_2015.__getitem__)
     # evalutate(rank_result,IDCG_2015,TRUE_RANK_2015)
 
 
-def evalutate(rank,i,dic):
-    DCG = 0.0
-    for school in dic:
-        predict_rank = rank.index(school) + 1
-        rel = dic[school][0]
-        DCG += rel/(log(predict_rank+1)/log(2))
-    NDCG = DCG/i
-    print NDCG
-    return
+def evalutate(loss):
+
+    global LEARNING_RATE
+    global PAST_LOSS
+
+    if abs(loss-PAST_LOSS)/PAST_LOSS <= 0.05:
+        return False
+
+    if loss > PAST_LOSS:
+        LEARNING_RATE = LEARNING_RATE * 1.02
+    else:
+        LEARNING_RATE = LEARNING_RATE * 0.98
+
+    PAST_LOSS = loss
+    return True
 
 
 
@@ -99,12 +105,15 @@ def learn():
         print "*****************************************************************"
         print "Iter %d" % iteration
         print "Training..."
-        loss = train()
-        print "total error on train:%f" % loss
+        train()
 
         print "Testing"
-        test()
-
+        loss = test()
+        if evalutate(loss) == False:
+            break
+        else:
+            continue
+    print WEIGHT_VECTOR
     return
 
 
@@ -124,4 +133,5 @@ def main():
 if __name__ == '__main__':
     main()
 
-
+#[ 1.01887782  2.01011881  2.99570975  3.95175291  5.00118303]
+#[ 1.01187692  2.0060254   3.00553437  4.00507274  4.96435024]
