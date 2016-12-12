@@ -32,6 +32,10 @@ def readResult(readPath):
 			result[schoolName] = (float(line.strip('\n')))
 	return sorted(result.items(), key=lambda x: x[1])
 
+def generateTrainAndTestData(conference):
+	generateData(trainPath,previousYears,conference)
+	generateData(testPath,['2015'],conference)
+
 def getResult(year,conference):
 	year = str(year)
 	result = {}
@@ -39,10 +43,6 @@ def getResult(year,conference):
 		fields = dataset[(affiliationID,conference,year)]
 		result[affiliationName[affiliationID]] = fields[-1]
 	return sorted(result.items(), key=lambda x: x[1])
-
-def generateTrainAndTestData(conference):
-	generateData(trainPath,previousYears,conference)
-	generateData(testPath,['2015'],conference)
 
 
 def printPredictionNicely(inList):
