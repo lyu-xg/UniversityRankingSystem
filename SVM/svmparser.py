@@ -1,9 +1,11 @@
 from alldata import dataset
 from schoolname import affiliationName 
-from os.path import expanduser
+from evaluate import evalutate
+from predictions import predictions
+#from os.path import expanduser
 from os import system
 
-PossibleConferences = [
+RelatedConferences = [
 	['KDD','ICDM','CIKM','WWW','AAAI','ICDE'],
 	['ICML','NIPS','AAAI','CVPR','KDD','ICASSP'],
 	['SIGIR','CIKM','WWW','ECIR','WSDM','KDD'],
@@ -13,7 +15,7 @@ PossibleConferences = [
 	['FSE','ICSE','ASE','ISSTA','ICSM','MSR'],
 	['MM','ICME','ICIP','CVPR','ICASSP','ICCV']]
 
-topConferences = [entry[0] for entry in PossibleConferences]
+topConferences = [entry[0] for entry in RelatedConferences]
 
 schools = [key for key in affiliationName]
 previousYears = ['2011','2012','2013','2014']
@@ -53,13 +55,13 @@ def generateTrainAndTestData(conference):
 	qid=generateData(trainPath,previousYears,conference,0)
 	generateData(testPath,['2015'],conference,qid)
 
-def getResult(year,conference):
+def getRealResult(year,conference):
 	year = str(year)
 	result = {}
 	for affiliationID in schools:
 		fields = dataset[(affiliationID,conference,year)]
 		result[affiliationName[affiliationID]] = fields[-1]
-	return sortedItems(result)
+	return result
 
 def printPredictionNicely(inList):
 	inList.reverse()
@@ -78,21 +80,44 @@ def predictAllConference():
 	return results
 
 def runModelandPredict():
-	runModel()
-	runPrediction()
-
-def runModel():
 	normalizeFactor = 10.0
 	system("svm_rank/./svm_rank_learn -c {} {} {}".format(normalizeFactor,trainPath,modelPath))
-
-def runPrediction():
 	system("svm_rank/./svm_rank_classify {} {} {}".format(testPath,modelPath,predictionPath))
+
+
+def makeRankingList(inDict):
+	sortedPair = sortedItems(inDict)
+	sortedPair.reverse()
+	return [school for school,score in sortedPair]
+
+def addPositionToResult(inDict):
+	sortedPair = sortedItems(inDict)
+	sortedPair.reverse()
+	result = {}
+	for index,(school,score) in enumerate(sortedPair):
+		if index == 20:
+			break
+		result[school] = (score,index+1)
+	return result
+
+def getEvaluation(conference):
+	trueDict = addPositionToResult(getRealResult(2015,conference))
+	rankingList = makeRankingList(predictions[conference])
+	return evalutate(rankingList,trueDict)
+
+
 
 if __name__ == "__main__":
 	#generateTrainAndTestData('KDD')
 	#printPredictionNicely(getResult(2015,'KDD'))
+	'''
 	P = predictAllConference()
 	print(P)
 	for conference in P:
 		print("\n\n***************"+conference+"*****************")
 		printPredictionNicely(sortedItems(P[conference]))
+	'''
+	for conference in topConferences:
+		print(conference,getEvaluation(conference))
+	
+
