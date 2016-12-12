@@ -6,7 +6,7 @@ from alldata import dataset
 from affiliations import affiliationIDs
 import time
 
-LEARNING_RATE = 0.00001
+LEARNING_RATE = 0.0001
 LAMBDA = 0.01
 TRAIN = []
 TEST = []
