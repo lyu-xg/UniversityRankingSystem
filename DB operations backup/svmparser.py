@@ -27,13 +27,31 @@ def readResult(readPath):
 	result = {}
 	with open(readPath) as infile:
 		for index,line in enumerate(infile):
-			print(index,line)
+			#print(index,line)
 			schoolName = getSchoolName(index)
 			result[schoolName] = (float(line.strip('\n')))
-	return result
+	return sorted(result.items(), key=lambda x: x[1])
+
+def getResult(year,conference):
+	year = str(year)
+	result = {}
+	for affiliationID in schools:
+		fields = dataset[(affiliationID,conference,year)]
+		result[affiliationName[affiliationID]] = fields[-1]
+	return sorted(result.items(), key=lambda x: x[1])
+
+def generateTrainAndTestData(conference):
+	generateData(trainPath,previousYears,conference)
+	generateData(testPath,['2015'],conference)
+
+
+def printPredictionNicely(inList):
+	inList.reverse()
+	for school,score in inList:
+		if score==0:
+			break
+		print(school,score)
 
 if __name__ == "__main__":
-	#generateData(trainPath,previousYears,'KDD')
-	#generateData(testPath,['2015'],'KDD')
-	print readResult(predictionPath)
-	#print len(schools)
+	#generateTrainAndTestData('KDD')
+	printPredictionNicely(getResult(2015,'KDD'))

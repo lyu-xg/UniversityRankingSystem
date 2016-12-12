@@ -51,6 +51,6 @@ if __name__ == "__main__":
     with open('temp') as infile:
         for line in infile:
             sql = line.strip('\n')
-            cursor.execute(sql)
+            cursor.execute(sql) 
     connection.commit()
     connection.close()
