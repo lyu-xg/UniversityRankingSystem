@@ -35,7 +35,7 @@ if __name__ == "__main__":
     connection = sqlite3.connect(sqlite_file)
     cursor = connection.cursor()
 
-
+    '''
     with open(FieldOfStudyHierarchyPath) as file:
         for index,line in enumerate(file):
             fields = line.strip("\n").strip("\r").replace("'","''").split("\t")
@@ -47,6 +47,10 @@ if __name__ == "__main__":
             #sql = "UPDATE SelectedAffiliations SET AffiliationName = '{}' WHERE AffiliationID = '{}'".format(fields[1],fields[0])
             #print(sql)
             cursor.execute(sql)
-
+    '''
+    with open('temp') as infile:
+        for line in infile:
+            sql = line.strip('\n')
+            cursor.execute(sql)
     connection.commit()
     connection.close()
