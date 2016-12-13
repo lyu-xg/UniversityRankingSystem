@@ -6,7 +6,7 @@ from alldata import dataset
 from affiliations import affiliationIDs
 import time
 
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.00001
 LAMBDA = 0.01
 TRAIN = []
 TEST = []
@@ -19,6 +19,14 @@ TRUE_RANK_2015 = {}
 IDCG_2014 = 0.0
 IDCG_2015 = 0.0
 
+RELEVANT = {"FSE":["ICSE","ASE","ISSTA","ICSM","MSR"],
+            "KDD":['ICDM','CIKM','WWW','AAAI','ICDE'],
+            "ICML":['NIPS','AAAI','CVPR','KDD','ICASSP'],
+            "SIGIR":['CIKM','WWW','ECIR','WSDM','KDD'],
+            "SIGMOD":['ICDE','VLDB','CIKM','KDD','EDBT'],
+            "SIGCOMM":['INFOCOM','ICC','GLOBECOM','NSDI','IMC'],
+            "MOBICOM":['INFOCOM','ICC','GLOBECOM','SIGCOMM','MobiSys'],
+            "MM":['ICME','ICIP','CVPR','ICASSP','ICCV']}
 
 def pre_data(conf):
 
@@ -32,19 +40,24 @@ def pre_data(conf):
 
     whole_rank_2014 = {}
     whole_rank_2015 = {}
-
+    relevant = RELEVANT[conf]
     for key in affiliationIDs:
-        f_2011 = dataset[(key, conf, '2011')]
-        f_2012 = dataset[(key, conf, '2012')]
-        f_2013 = dataset[(key, conf, '2013')]
-        f_2014 = dataset[(key, conf, '2014')]
-        f_2015 = dataset[(key, conf, '2015')]
-        WEIGHT_VECTORS[(key,conf)] = np.zeros(6)
+        # f_2011 = dataset[(key, conf, '2011')]
+        # f_2012 = dataset[(key, conf, '2012')]
+        # f_2013 = dataset[(key, conf, '2013')]
+        # f_2014 = dataset[(key, conf, '2014')]
+        # f_2015 = dataset[(key, conf, '2015')]
+        f_2011 = conbine(key,conf,'2011',relevant)
+        f_2012 = conbine(key, conf, '2012', relevant)
+        f_2013 = conbine(key, conf, '2013', relevant)
+        f_2014 = conbine(key, conf, '2014', relevant)
+        f_2015 = conbine(key, conf, '2015', relevant)
+        WEIGHT_VECTORS[(key,conf)] = np.zeros(18)
         whole_rank_2014[key] = f_2014[5]
         whole_rank_2015[key] = f_2015[5]
 
-        train_feature = list_add(f_2011,f_2012, f_2013)
-        test_feature = list_add(f_2012, f_2013, f_2014)
+        train_feature = list_append(f_2011,f_2012, f_2013)
+        test_feature = list_append(f_2012, f_2013, f_2014)
 
         train_data = [key,train_feature,f_2014[5]]
         test_data = [key,test_feature,f_2015[5]]
@@ -74,11 +87,32 @@ def pre_data(conf):
 
     return
 
+def conbine(key,conf,year,relevant):
+
+    itself = dataset[(key, conf, year)]
+    for releconf in relevant:
+        rele = dataset[(key,releconf,year)]
+        result = []
+        for i in range(len(itself)):
+            result.append(itself[i] + rele[i])
+        itself = result
+    return itself
+
 def list_add(l1,l2,l3):
     result = []
     for i in range(len(l1)):
         result.append(l1[i]+l2[i]+l3[i])
     return result
+
+def list_average(l1,l2,l3):
+    result = []
+    for i in range(len(l1)):
+        result.append((l1[i]+l2[i]+l3[i])/3.0)
+    return result
+
+def list_append(l1,l2,l3):
+
+    return l1+l2+l3
 
 
 def train(conf):
@@ -186,7 +220,8 @@ def main():
     global TRUE_RANK_2015
     global WEIGHT_VECTORS
 
-    conf_list = ['ICML','KDD','SIGIR','SIGMOD','SIGCOMM','FSE','MOBICOM','MM']
+    conf_list = ['ICML','KDD','SIGIR','SIGMOD','SIGCOMM','MOBICOM','FSE','MM']
+    # conf_list = ['FSE']
     finalresult = {}
     for conf in conf_list:
         pre_data(conf)
