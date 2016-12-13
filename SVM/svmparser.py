@@ -26,14 +26,19 @@ predictionPath = 'svm_rank/prediction'
 
 def generateData(writePath, yearRange, conference,qid):
 	with open(writePath,'w') as outfile:
-		for year in yearRange:
-			qid += 1
-			for affiliationID in schools:
+		for affiliationID in schools:
+			futureYear = str(int(yearRange[-1])+1)
+			futureYearFields = dataset[(affiliationID,conference,futureYear)]
+			fieldSum = [0,0,0,0,0,0]
+			for year in yearRange:
+				# for loop averages all 3 year fields together
 				fields = dataset[(affiliationID,conference,year)]
 				# [f1, f2, f3, f4, f5, score]
-				line = "{} qid:{} 1:{} 2:{} 3:{} 4:{} 5:{}\n".format(fields[-1],qid,fields[0],fields[1],fields[2],fields[3],fields[4])
-				outfile.write(line)
-	return qid
+				for index,value in enumerate(fields):
+					fieldSum[index]+=value/len(yearRange)
+			line = "{} qid:{} 1:{} 2:{} 3:{} 4:{} 5:{}\n".format(futureYearFields[-1],qid,fieldSum[0],fieldSum[1],fieldSum[2],fieldSum[3],fieldSum[4])
+			outfile.write(line)
+
 
 def getSchoolName(schoolIndex):
 	schoolID = schools[schoolIndex]
@@ -52,8 +57,8 @@ def readPrediction():
 	return result
 
 def generateTrainAndTestData(conference):
-	qid=generateData(trainPath,previousYears,conference,0)
-	generateData(testPath,['2015'],conference,qid)
+	generateData(trainPath,['2011','2012','2013'],conference,1)
+	generateData(testPath,['2012','2013','2014'],conference,2)
 
 def getRealResult(year,conference):
 	year = str(year)
@@ -80,7 +85,7 @@ def predictAllConference():
 	return results
 
 def runModelandPredict():
-	normalizeFactor = 10.0
+	normalizeFactor = 20.0
 	system("svm_rank/./svm_rank_learn -c {} {} {}".format(normalizeFactor,trainPath,modelPath))
 	system("svm_rank/./svm_rank_classify {} {} {}".format(testPath,modelPath,predictionPath))
 
@@ -105,18 +110,16 @@ def getEvaluation(conference):
 	rankingList = makeRankingList(predictions[conference])
 	return evalutate(rankingList,trueDict)
 
+def predictAndPrint():
 
-
-if __name__ == "__main__":
-	#generateTrainAndTestData('KDD')
-	#printPredictionNicely(getResult(2015,'KDD'))
-	'''
 	P = predictAllConference()
 	print(P)
 	for conference in P:
 		print("\n\n***************"+conference+"*****************")
 		printPredictionNicely(sortedItems(P[conference]))
-	'''
+
+if __name__ == "__main__":
+	#predictAndPrint()	
 	for conference in topConferences:
 		print(conference,getEvaluation(conference))
 	
