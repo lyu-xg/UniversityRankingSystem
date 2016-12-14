@@ -5,6 +5,7 @@ from math import *
 from alldata import dataset
 from affiliations import affiliationIDs
 import time
+import sys
 
 LEARNING_RATE = 0.00001
 LAMBDA = 0.01
@@ -28,7 +29,7 @@ RELEVANT = {"FSE":["ICSE","ASE","ISSTA","ICSM","MSR"],
             "MOBICOM":['INFOCOM','ICC','GLOBECOM','SIGCOMM','MobiSys'],
             "MM":['ICME','ICIP','CVPR','ICASSP','ICCV']}
 
-def pre_data(conf):
+def pre_data(conf,signal,combine_fn):
 
     global LENGTH_TEST
     global LENGTH_TRAIN
@@ -42,22 +43,24 @@ def pre_data(conf):
     whole_rank_2015 = {}
     relevant = RELEVANT[conf]
     for key in affiliationIDs:
-        # f_2011 = dataset[(key, conf, '2011')]
-        # f_2012 = dataset[(key, conf, '2012')]
-        # f_2013 = dataset[(key, conf, '2013')]
-        # f_2014 = dataset[(key, conf, '2014')]
-        # f_2015 = dataset[(key, conf, '2015')]
-        f_2011 = conbine(key,conf,'2011',relevant)
-        f_2012 = conbine(key, conf, '2012', relevant)
-        f_2013 = conbine(key, conf, '2013', relevant)
-        f_2014 = conbine(key, conf, '2014', relevant)
-        f_2015 = conbine(key, conf, '2015', relevant)
-        WEIGHT_VECTORS[(key,conf)] = np.zeros(18)
+        if signal == "related":
+            f_2011 = conbine(key, conf, '2011', relevant)
+            f_2012 = conbine(key, conf, '2012', relevant)
+            f_2013 = conbine(key, conf, '2013', relevant)
+            f_2014 = conbine(key, conf, '2014', relevant)
+            f_2015 = conbine(key, conf, '2015', relevant)
+        else:
+            f_2011 = dataset[(key, conf, '2011')]
+            f_2012 = dataset[(key, conf, '2012')]
+            f_2013 = dataset[(key, conf, '2013')]
+            f_2014 = dataset[(key, conf, '2014')]
+            f_2015 = dataset[(key, conf, '2015')]
+        WEIGHT_VECTORS[(key,conf)] = np.zeros(6)
         whole_rank_2014[key] = f_2014[5]
         whole_rank_2015[key] = f_2015[5]
 
-        train_feature = list_append(f_2011,f_2012, f_2013)
-        test_feature = list_append(f_2012, f_2013, f_2014)
+        train_feature = combine_fn(f_2011,f_2012, f_2013)
+        test_feature = combine_fn(f_2012, f_2013, f_2014)
 
         train_data = [key,train_feature,f_2014[5]]
         test_data = [key,test_feature,f_2015[5]]
@@ -208,7 +211,7 @@ def basic_info():
     return
 
 
-def main():
+def main(argv):
     start = time.clock()
     global TRAIN
     global TEST
@@ -220,11 +223,18 @@ def main():
     global TRUE_RANK_2015
     global WEIGHT_VECTORS
 
+    if len(argv) == 0:
+        argv.append("related")
+
     conf_list = ['ICML','KDD','SIGIR','SIGMOD','SIGCOMM','MOBICOM','FSE','MM']
     # conf_list = ['FSE']
     finalresult = {}
     for conf in conf_list:
-        pre_data(conf)
+        #if you want to change the combine method,
+        #the "list_add" can be changed to
+        # list_append
+        # list_average
+        pre_data(conf,argv[0],list_add)
         finalresult[conf] = learn(conf)
         TRAIN = []
         TEST = []
@@ -242,6 +252,6 @@ def main():
     print "Finish in %f s" %(end - start)
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
 
 
