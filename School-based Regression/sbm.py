@@ -161,7 +161,7 @@ def test(conf):
     result = evalutate(rank_result,IDCG_2015,TRUE_RANK_2015)
     print "total error on test:%f" % total_diff
     print "NDCG@20 on test %f"%result
-    return result
+    return result,rank_result
 
 
 def evalutate(rank,i,dic):
@@ -192,14 +192,14 @@ def learn(conf):
         print "Training..."
         train(conf)
         print "Testing"
-        ndcg = test(conf)
+        ndcg,result = test(conf)
         allresult.append(ndcg)
     OverallBest = max(allresult)
 
     # print rank_test[:100]
     # print rank_train[:100]
 
-    return OverallBest
+    return OverallBest,result
 
 
 def basic_info():
@@ -208,7 +208,7 @@ def basic_info():
     return
 
 
-def main():
+def sbr():
     start = time.clock()
     global TRAIN
     global TEST
@@ -223,9 +223,10 @@ def main():
     conf_list = ['ICML','KDD','SIGIR','SIGMOD','SIGCOMM','MOBICOM','FSE','MM']
     # conf_list = ['FSE']
     finalresult = {}
+    result = {}
     for conf in conf_list:
         pre_data(conf)
-        finalresult[conf] = learn(conf)
+        finalresult[conf],result[conf] = learn(conf)
         TRAIN = []
         TEST = []
         IDCG_2014 = 0.0
@@ -240,8 +241,9 @@ def main():
 
     end = time.clock()
     print "Finish in %f s" %(end - start)
+    return result
 
 if __name__ == '__main__':
-    main()
+    print(sbr())
 
 
